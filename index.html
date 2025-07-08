@@ -308,7 +308,7 @@
                             if (guestInWaitlist) {
                                 tableStatusDisplay = `Occupied<br>(${guestInWaitlist.name} - ${guestInWaitlist.count} pers., Combined)`;
                             } else {
-                                tableStatusDisplay = `Occupied<br>(Combined for waitlist ${table.combinedWithGuestId})`;
+                                tableStatusDisplay = `Occupied<br>(Combined for waitlist)`;
                             }
                         } else {
                             const guestInWaitlist = waitlist.find(g => g.id === table.assignedGuestId);
