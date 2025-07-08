@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Restaurant Waitlist</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0.4vh; 
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 1.1vh; 
+        }
+        .container {
+            max-width: 98vw; 
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 2vh; 
+            border-radius: 0.8vh; 
+            box-shadow: 0 0 1vh rgba(0, 0, 0, 0.1); 
+            display: flex;
+            flex-direction: column; 
+            gap: 1.5vh; 
+        }
+
+        @media (min-width: 768px) { 
+            .container {
+                flex-direction: row; 
+                justify-content: space-between; 
+            }
+            .waitlist-section {
+                order: 2; 
+            }
+            .tables-section {
+                order: 1; 
+            }
+        }
+
+        .waitlist-section, .tables-section {
+            flex: 1; 
+            padding: 1.2vh; 
+            border: 0.1vh solid #eee; 
+            border-radius: 0.6vh; 
+            background-color: #f9f9f9;
+        }
+       
+        h1, h2 {
+            text-align: center;
+            color: #5cb85c;
+            margin-top: 0;
+            font-size: 2.5vh; 
+        }
+        h2 {
+            font-size: 2vh; 
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2vh; 
+            margin-bottom: 1.1vh; 
+        }
+        input[type="text"], input[type="number"] {
+            padding: 1vh; 
+            border: 0.1vh solid #ddd; 
+            border-radius: 0.4vh; 
+            font-size: 1.2vh; 
+        }
+        /* Style for "Empty All" button */
+        #empty-all-tables-btn {
+            background-color: #f44336; 
+            margin-top: 2vh;
+            width: 100%;
+            font-size: 1.8vh;
+            padding: 1.2vh 1.8vh;
+        }
+        #empty-all-tables-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        button {
+            padding: 1vh 1.5vh; 
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 0.4vh; 
+            cursor: pointer;
+            font-size: 1.6vh; 
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            background-color: #e9e9e9;
+            margin-bottom: 0.6vh; 
+            padding: 1vh; 
+            border-radius: 0.4vh; 
+            display: flex;
+            flex-wrap: wrap; 
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.4vh; 
+        }
+        li span.reservation-id {
+            font-size: 1.1vh; 
+            color: #666;
+            width: 100%; 
+            margin-bottom: 0.4vh; 
+        }
+        li button {
+            background-color: #d9534f;
+            padding: 0.5vh 1vh; 
+            font-size: 1.3vh; 
+        }
+        li button:hover {
+            background-color: #c9302c;
+        }
+        .empty-message {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+            font-size: 1.5vh; 
+        }
+        .table-group {
+            margin-bottom: 1.5vh; 
+            border-bottom: 0.1vh dashed #ccc; 
+            padding-bottom: 1vh; 
+        }
+        .table-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .table-group h3 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 0.8vh; 
+            text-align: center;
+            font-size: 2vh; 
+        }
+        .table-group h3 .counter {
+            font-size: 1.5vh; 
+            color: #007bff; 
+            margin-left: 0.8vw; 
+            background-color: #e0f7fa; 
+            padding: 0.2vh 0.6vw; 
+            border-radius: 0.5vh; 
+        }
+
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 1vh; 
+        }
+        .table-card {
+            border: 0.1vh solid #ccc; 
+            border-radius: 0.4vh; 
+            padding: 0.8vh; 
+            text-align: center;
+            background-color: #fff;
+            box-shadow: 0 0.15vh 0.3vh rgba(0, 0, 0, 0.05); 
+            font-size: 1.3vh; 
+            min-height: 8vh; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+        }
+        .table-card.occupied {
+            background-color: #ffe0b2;
+            border-color: #ff9800;
+        }
+        .table-card.available {
+            background-color: #c8e6c9;
+            border-color: #4CAF50;
+        }
+        .table-card.combined-for-guest {
+            background-color: #d1ecf1; 
+            border-color: #00bcd4;
+            box-shadow: 0 0 0.8vh rgba(0, 188, 212, 0.5);
+        }
+
+        .table-card strong {
+            font-size: 1.4vh; 
+            margin-bottom: 0.3vh;
+        }
+        .table-card button {
+            margin-top: 0.5vh; 
+            width: 100%;
+            padding: 0.6vh 0.8vh; 
+            font-size: 1.3vh; 
+        }
+        .table-card .action-buttons { 
+            display: flex;
+            flex-direction: column;
+            gap: 0.5vh;
+        }
+        .table-card.occupied button {
+            background-color: #607D8B;
+        }
+        .table-card.occupied button:hover {
+            background-color: #546E7A;
+        }
+        .table-card.available button {
+            background-color: #4CAF50;
+        }
+        .table-card.available button:hover {
+            background-color: #43A047;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tables-section">
+            <h2>Tables</h2>
+            <div id="tables-container">
+                </div>
+            <button id="empty-all-tables-btn">Empty All Tables</button>
+        </div>
+
+        <div class="waitlist-section">
+            <h2>Guest Waitlist</h2>
+
+            <form id="waitlist-form">
+                <input type="text" id="guestName" placeholder="Guest Name" required>
+                <input type="number" id="guestCount" placeholder="Number of people" min="1" required>
+                <button type="submit">Add to Waitlist</button>
+            </form>
+
+            <ul id="waitlist">
+                </ul>
+            <p id="empty-waitlist-message" class="empty-message" style="display: none;">Waitlist is empty.</p>
+        </div>
+    </div>
+
+    <script>
+        let waitlist = []; 
+        let tables = [];    
+
+        const waitlistForm = document.getElementById('waitlist-form');
+        const guestNameInput = document.getElementById('guestName');
+        const guestCountInput = document.getElementById('guestCount');
+        const waitlistElement = document.getElementById('waitlist');
+        const emptyWaitlistMessage = document.getElementById('empty-waitlist-message');
+        const tablesContainerElement = document.getElementById('tables-container');
+        const emptyAllTablesBtn = document.getElementById('empty-all-tables-btn'); 
+
+        function generateUniqueId() {
+            return `RES-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+        }
+        
+        function initializeTables() {
+            const tableCapacities = [2, 4, 6];
+            const tablesPerCapacity = 10;
+
+            tableCapacities.forEach(capacity => {
+                for (let i = 1; i <= tablesPerCapacity; i++) {
+                    tables.push({
+                        id: `table-${capacity}-${i}`,
+                        capacity: capacity, 
+                        originalCapacity: capacity, 
+                        number: i, 
+                        occupied: true, 
+                        assignedGuestId: generateUniqueId(), 
+                        combinedWithGuestId: null 
+                    });
+                }
+            });
+        }
+        function renderTables() {
+            tablesContainerElement.innerHTML = ''; 
+
+            const groupedTables = tables.reduce((acc, table) => {
+                if (!acc[table.originalCapacity]) {
+                    acc[table.originalCapacity] = [];
+                }
+                acc[table.originalCapacity].push(table);
+                return acc;
+            }, {});
+
+            Object.keys(groupedTables).sort((a, b) => parseInt(a) - parseInt(b)).forEach(capacity => {
+                const groupTables = groupedTables[capacity];
+                const availableTablesCount = groupTables.filter(table => !table.occupied).length;
+                const totalTablesCount = groupTables.length;
+
+                const tableGroupDiv = document.createElement('div');
+                tableGroupDiv.className = 'table-group';
+                tableGroupDiv.innerHTML = `<h3>${capacity}-person Tables <span class="counter">${availableTablesCount}/${totalTablesCount}</span></h3>`;
+                
+                const tablesGridDiv = document.createElement('div');
+                tablesGridDiv.className = 'tables-grid';
+
+                groupTables.forEach(table => {
+                    const isCombinedForGuest = table.combinedWithGuestId !== null;
+                    const tableCard = document.createElement('div');
+                    tableCard.className = `table-card ${table.occupied ? 'occupied' : 'available'} ${isCombinedForGuest ? 'combined-for-guest' : ''}`;
+                    
+                    let tableStatusDisplay = ''; 
+
+                    if (table.occupied) {
+                        if (isCombinedForGuest) {
+                            const guestInWaitlist = waitlist.find(g => g.id === table.combinedWithGuestId);
+                            if (guestInWaitlist) {
+                                tableStatusDisplay = `Occupied<br>(${guestInWaitlist.name} - ${guestInWaitlist.count} pers., Combined)`;
+                            } else {
+                                tableStatusDisplay = `Occupied<br>(Combined for waitlist ${table.combinedWithGuestId})`;
+                            }
+                        } else {
+                            const guestInWaitlist = waitlist.find(g => g.id === table.assignedGuestId);
+                            if (guestInWaitlist) {
+                                tableStatusDisplay = `Occupied<br>(${guestInWaitlist.name} - ${guestInWaitlist.count} pers.)`;
+                            } else {
+                                tableStatusDisplay = `Occupied<br>`;
+                            }
+                        }
+                    } else {
+                        tableStatusDisplay = `Available`;
+                    }
+
+                    let actionButtonsHTML = '';
+                    actionButtonsHTML += `<button data-table-id="${table.id}" class="${table.occupied ? 'release' : 'assign'}">
+                                ${table.occupied ? 'Release' : 'Occupy'}
+                            </button>`;
+                    
+                    tableCard.innerHTML = `
+                        <strong>Table ${table.number} (${table.originalCapacity}-pers.)</strong><br>
+                        ${tableStatusDisplay} 
+                        <div class="action-buttons">
+                            ${actionButtonsHTML}
+                        </div>
+                    `;
+                    tablesGridDiv.appendChild(tableCard);
+                });
+                tableGroupDiv.appendChild(tablesGridDiv);
+                tablesContainerElement.appendChild(tableGroupDiv);
+            });
+        }
+
+
+        function renderWaitlist() {
+            waitlistElement.innerHTML = ''; 
+            if (waitlist.length === 0) {
+                emptyWaitlistMessage.style.display = 'block';
+            } else {
+                emptyWaitlistMessage.style.display = 'none';
+                waitlist.forEach(guest => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span class="main-info">${guest.name} (${guest.count} people) - added: ${new Date(guest.addedAt).toLocaleTimeString()}</span>
+                        <span class="reservation-id">ID: ${guest.id}</span>
+                        <button data-id="${guest.id}" class="remove-from-waitlist">Remove</button>
+                    `;
+                    waitlistElement.appendChild(listItem);
+                });
+            }
+        }
+
+
+        function findAndAssignTable(guest) {
+                const suitableSingleTable = tables.find(table =>
+                !table.occupied && table.originalCapacity >= guest.count
+            );
+
+            if (suitableSingleTable) {
+                suitableSingleTable.occupied = true;
+                suitableSingleTable.assignedGuestId = guest.id; 
+                suitableSingleTable.combinedWithGuestId = null; 
+                waitlist = waitlist.filter(g => g.id !== guest.id); 
+                renderWaitlist();
+                renderTables();
+                alert(`Guest ${guest.name} (ID: ${guest.id}, ${guest.count} people) has taken Table ${suitableSingleTable.number} (${suitableSingleTable.originalCapacity}-person)!`);
+                console.log(`Guest ${guest.name} (ID: ${guest.id}) has been assigned to single table ${suitableSingleTable.id}.`);
+                return true;
+            }
+
+            const availableTables = tables.filter(t => !t.occupied);
+            let bestCombination = null;
+            let minTablesInCombination = Infinity; 
+
+            const sortedAvailableTables = [...availableTables].sort((a, b) => b.originalCapacity - a.originalCapacity);
+
+            function findCombinations(startIndex, currentCombination, currentSum) {
+                if (currentSum >= guest.count) {
+                    if (currentCombination.length < minTablesInCombination) {
+                        minTablesInCombination = currentCombination.length;
+                        bestCombination = [...currentCombination];
+                    }
+                    return;
+                }
+
+                if (startIndex === sortedAvailableTables.length || 
+                    currentCombination.length >= minTablesInCombination) { 
+                    return;
+                }
+
+                currentCombination.push(sortedAvailableTables[startIndex]);
+                findCombinations(startIndex + 1, currentCombination, currentSum + sortedAvailableTables[startIndex].originalCapacity);
+                currentCombination.pop(); 
+
+                findCombinations(startIndex + 1, currentCombination, currentSum);
+            }
+
+            findCombinations(0, [], 0);
+
+
+            if (bestCombination && bestCombination.length > 0) {
+                const combinedCapacity = bestCombination.reduce((sum, t) => sum + t.originalCapacity, 0);
+                const tableNumbers = bestCombination.map(t => `Table ${t.number} (${t.originalCapacity}-pers.)`).join(', ');
+
+                const confirmCombination = confirm(
+                    `No single table available for ${guest.name} (${guest.count} people).\n\n` +
+                    `Found a combination of ${bestCombination.length} tables with total capacity of ${combinedCapacity} people:\n` +
+                    `${tableNumbers}\n\n` +
+                    `Do you want to assign these tables to ${guest.name}?`
+                );
+
+                if (confirmCombination) {
+                    bestCombination.forEach(table => {
+                        table.occupied = true;
+                        table.assignedGuestId = guest.id; 
+                        table.combinedWithGuestId = guest.id; 
+                    });
+                    waitlist = waitlist.filter(g => g.id !== guest.id); 
+                    renderWaitlist();
+                    renderTables();
+                    alert(`Guest ${guest.name} (ID: ${guest.id}, ${guest.count} people) has taken the combined tables!`);
+                    console.log(`Guest ${guest.name} (ID: ${guest.id}) assigned to combined tables: ${bestCombination.map(t => t.id).join(', ')}.`);
+                    return true;
+                }
+            }
+
+            return false; 
+        }
+
+        function addGuest(event) {
+            event.preventDefault(); 
+
+            const name = guestNameInput.value.trim();
+            const count = parseInt(guestCountInput.value, 10);
+
+            if (name && count > 0) {
+                const newGuest = {
+                    id: generateUniqueId(), 
+                    name: name,
+                    count: count,
+                    addedAt: new Date()
+                };
+
+                if (!findAndAssignTable(newGuest)) {
+                    waitlist.push(newGuest);
+                    waitlist.sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime());
+                    renderWaitlist();
+                    console.log(`Guest ${newGuest.name} (ID: ${newGuest.id}, ${newGuest.count} people) added to waitlist. Waiting for a table.`);
+                }
+                
+                guestNameInput.value = '';
+                guestCountInput.value = '';
+            } else {
+                alert('Please provide guest name and number of people.');
+            }
+        }
+
+        function handleTableAction(event) {
+            const target = event.target;
+            if (target.tagName === 'BUTTON' && target.hasAttribute('data-table-id')) {
+                const tableId = target.getAttribute('data-table-id');
+                const table = tables.find(t => t.id === tableId);
+
+                if (!table) return;
+
+                if (target.classList.contains('release')) {
+                    if (table.combinedWithGuestId) {
+                        const guestIdToRelease = table.combinedWithGuestId;
+                        const tablesInCombination = tables.filter(t => t.combinedWithGuestId === guestIdToRelease);
+                        
+                        tablesInCombination.forEach(t => {
+                            t.occupied = false;
+                            t.assignedGuestId = null;
+                            t.combinedWithGuestId = null; 
+                        });
+                        console.log(`Tables combined for guest ${guestIdToRelease} have been released.`);
+                    } else {
+                        table.occupied = false;
+                        table.assignedGuestId = null; 
+                        console.log(`Table ${table.id} has been released.`);
+                    }
+                    renderTables();
+                    checkWaitlistForAvailableTables();
+
+                } else if (target.classList.contains('assign')) {
+                    table.occupied = true;
+                    table.assignedGuestId = generateUniqueId(); 
+                    table.combinedWithGuestId = null; 
+                    console.log(`Table ${table.id} has been manually occupied.`);
+                    renderTables();
+                }
+            }
+        }
+
+        function removeGuestFromWaitlistManual(event) {
+            const target = event.target;
+            if (target.tagName === 'BUTTON' && target.classList.contains('remove-from-waitlist')) {
+                const guestIdToRemove = target.getAttribute('data-id');
+                waitlist = waitlist.filter(guest => guest.id !== guestIdToRemove);
+                console.log(`Guest ${guestIdToRemove} removed from waitlist manually.`);
+                renderWaitlist();
+                renderTables(); 
+            }
+        }
+
+        function checkWaitlistForAvailableTables() {
+            const guestsWaiting = [...waitlist]; 
+            for (const guest of guestsWaiting) {
+                if (waitlist.some(g => g.id === guest.id)) {
+                    findAndAssignTable(guest); 
+                }
+            }
+        }
+
+        function emptyAllTables() {
+            const confirmEmpty = confirm("Are you sure you want to empty all tables? This will make them all available and clear any associated guest IDs.");
+            if (confirmEmpty) {
+                tables.forEach(table => {
+                    table.occupied = false;
+                    table.assignedGuestId = null;
+                    table.combinedWithGuestId = null; 
+                });
+                renderTables();
+                console.log("All tables have been emptied.");
+                checkWaitlistForAvailableTables(); 
+            }
+        }
+            
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTables();      
+            renderTables();          
+            renderWaitlist();        
+        });
+
+        waitlistForm.addEventListener('submit', addGuest);
+        waitlistElement.addEventListener('click', removeGuestFromWaitlistManual);
+        tablesContainerElement.addEventListener('click', handleTableAction);
+        emptyAllTablesBtn.addEventListener('click', emptyAllTables); 
+    </script>
+</body>
+</html>
